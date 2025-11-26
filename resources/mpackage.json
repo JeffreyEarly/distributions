@@ -1,0 +1,32 @@
+{
+    "name": "Distributions",
+    "version": "1.0.0",
+    "id": "c543ab89-e5a2-4697-830f-12cf8ed03694",
+    "formerNames": [],
+    "displayName": "Distributions",
+    "summary": "A series of classes for modeling distributions and stochastic processes.",
+    "description": "A series of classes for modeling distributions and stochastic processes.",
+    "provider": {
+        "name": "",
+        "organization": "",
+        "email": "",
+        "url": ""
+    },
+    "folders": [
+        {
+            "path": "UnitTests",
+            "languages": [
+                "matlab"
+            ]
+        },
+        {
+            "path": "figures",
+            "languages": [
+                "matlab"
+            ]
+        }
+    ],
+    "dependencies": [],
+    "releaseCompatibility": ">=R2024b",
+    "schemaVersion": "1.1.0"
+}
