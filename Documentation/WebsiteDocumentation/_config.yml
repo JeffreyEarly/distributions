@@ -1,0 +1,5 @@
+remote_theme: just-the-docs/just-the-docs
+title: Distributions
+description: Classes for modeling distributions and stochastic processes
+compress_html:
+  blanklines: true

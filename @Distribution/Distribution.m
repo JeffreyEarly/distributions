@@ -107,6 +107,20 @@ classdef (Abstract) Distribution
     end
     
     
+    methods (Access = protected)
+        function self = Distribution()
+            % Initialize base storage for a distribution subclass.
+            %
+            % Concrete subclasses call this constructor implicitly before
+            % they set the distribution function handles and cached
+            % statistics stored by the base class.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: self = Distribution()
+            % - Returns self: Distribution base-class instance
+        end
+    end
+
     methods
         function z = locationOfCDFPercentile(self, alpha)
             % Find the location of a CDF percentile.
