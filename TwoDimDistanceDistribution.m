@@ -76,7 +76,13 @@ classdef TwoDimDistanceDistribution < Distribution
             % it must be true that sum(pdf1d) = 1.0000
             
             % but we want that sum(pdf1d .* diff(s)) = 1.000
-            pdf1d(2:end) = RunningFilter(pdf1d(2:end)./diff(s),3,'mean');
+            radialPDF = pdf1d(2:end)./diff(s);
+            if numel(radialPDF) > 2
+                originalRadialPDF = radialPDF;
+                radialPDF = movmean(radialPDF,3,'Endpoints','shrink');
+                radialPDF([1 end]) = originalRadialPDF([1 end]);
+            end
+            pdf1d(2:end) = radialPDF;
             cdf1d = [0; cumsum(pdf1d(2:end).*diff(s))];
             
             % now take care of the the fact that we used the diagnoal of a
