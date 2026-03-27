@@ -48,7 +48,7 @@ theoretical CDF $$F(z)$$ through standard AD and KS statistics.
   + [`logPDF`](/distributions/classes/distribution/logpdf.html) Logarithm of the probability density $$\log p(z)$$.
   + [`pdf`](/distributions/classes/distribution/pdf.html) Probability density function $$p(z)$$.
   + [`sigma0`](/distributions/classes/distribution/sigma0.html) Initialization scale $$\sigma_0$$ satisfying $$w(\sigma_0) = \sigma_0^2$$.
-  + [`variance`](/distributions/classes/distribution/variance.html) Total variance stored by the subclass.
+  + [`variance`](/distributions/classes/distribution/variance.html) Total variance.
   + [`varianceInPercentileRange`](/distributions/classes/distribution/varianceinpercentilerange.html) Compute the second moment between two CDF percentiles.
   + [`varianceInRange`](/distributions/classes/distribution/varianceinrange.html) Compute the range-limited second moment of the distribution.
   + [`w`](/distributions/classes/distribution/w.html) Weight function $$w(z)$$ for residual-based reweighting.

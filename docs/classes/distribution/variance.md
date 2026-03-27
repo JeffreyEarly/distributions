@@ -9,7 +9,7 @@ mathjax: true
 
 #  variance
 
-Total variance stored by the subclass.
+Total variance.
 
 
 ---
