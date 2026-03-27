@@ -9,13 +9,15 @@ classdef UniformDistribution < Distribution
     
     methods
         function self = UniformDistribution(a,b)
-            if nargin == 0
-                self.a = -0.5;
-                self.b = 0.5;
-            else
-                self.a = a;
-                self.b = b;
+            arguments
+                a (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = -0.5
+                b (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = 0.5
             end
+            if nargin == 1
+                error('You must specify both interval endpoints.');
+            end
+            self.a = a;
+            self.b = b;
             self.pdf = @(z) (z < self.a | z > self.b)*0 + (z >= self.a & z <= self.b)*(1/(self.b-self.a)) ;
             self.cdf = @(z) (z < self.a)*0 + (z >= self.a & z <= self.b)*((z-self.a)/(self.b-self.a)) +  (z > self.b)*1;
 %             self.w = @(z)((nu/(nu+1))*sigma^2*(1+z.^2/(nu*sigma^2)));
@@ -28,4 +30,3 @@ classdef UniformDistribution < Distribution
     end
     
 end
-

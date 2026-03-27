@@ -8,6 +8,9 @@ classdef NormalDistribution < Distribution
     
     methods
         function self = NormalDistribution(sigma)
+            arguments
+                sigma (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+            end
             self.sigma = sigma;
             self.pdf = @(z) exp(-(z.*z)/(2*sigma*sigma))/(sigma*sqrt(2*pi));
             self.cdf = @(z) 0.5*(1 + erf(z/(sigma*sqrt(2))));
@@ -20,9 +23,13 @@ classdef NormalDistribution < Distribution
         end
         
         function y = rand(self,sz)
-           y = self.sigma*randn(sz); 
+            arguments
+                self (1,1) NormalDistribution
+                sz {mustBeNumeric,mustBeReal,mustBeFinite,mustBeInteger,mustBeNonnegative,mustBeVector}
+            end
+            sz = reshape(sz,1,[]);
+            y = self.sigma*randn(sz); 
         end
 
     end
 end
-

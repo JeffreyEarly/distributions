@@ -8,24 +8,27 @@ classdef StudentTDistribution < Distribution
     end
     
     methods
-        function self = StudentTDistribution(parameters)
+        function self = StudentTDistribution(options)
             arguments
-                parameters.nu (1,1) {mustBeNonempty}
-                parameters.sigma (1,1) {mustBeReal}
-                parameters.variance (1,1) {mustBeReal}
+                options.nu (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+                options.sigma {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive,mustBeScalarOrEmpty} = []
+                options.variance {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive,mustBeScalarOrEmpty} = []
             end
-            nu = parameters.nu;
-            self.nu = nu;
 
-            if isfield(parameters,'sigma') && isfield(parameters,'variance')
+            nu = options.nu;
+            self.nu = nu;
+            hasSigma = ~isempty(options.sigma);
+            hasVariance = ~isempty(options.variance);
+
+            if hasSigma && hasVariance
                 error('You can set either sigma or variance, not both.');
-            elseif isfield(parameters,'variance') && parameters.nu <= 2
+            elseif hasVariance && nu <= 2
                 error('You cannot set the variance for nu <=2. You can only set sigma.');
-            elseif isfield(parameters,'variance')
-                self.variance = parameters.variance;
+            elseif hasVariance
+                self.variance = options.variance;
                 sigma = sqrt(((nu-2)/nu)*self.variance);
-            elseif isfield(parameters,'sigma')
-                sigma = parameters.sigma;
+            elseif hasSigma
+                sigma = options.sigma;
                 self.variance = sigma*sigma*nu/(nu-2);
             else
                 error('You must set either sigma or variance.');
@@ -50,6 +53,10 @@ classdef StudentTDistribution < Distribution
     
     methods (Static)
        function p = tcdf(x,n)
+            arguments
+                x {mustBeNumeric,mustBeReal}
+                n {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+            end
             % TCDF returns student cumulative distribtion function
             %
             % cdf = tcdf(x,DF);
@@ -103,4 +110,3 @@ classdef StudentTDistribution < Distribution
         end 
     end
 end
-

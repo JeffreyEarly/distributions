@@ -8,6 +8,9 @@ classdef Chi2Distribution < Distribution
     
     methods
         function self = Chi2Distribution(k)
+            arguments
+                k (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+            end
             self.k = k;
             self.pdf = @(z) (z.^(k/2-1)).*exp(-z/2)/( (2^(k/2))*gamma(k/2) );
             self.cdf = @(z) gammainc(z/2,k/2);
@@ -26,4 +29,3 @@ classdef Chi2Distribution < Distribution
 
     end
 end
-

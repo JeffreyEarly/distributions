@@ -10,6 +10,9 @@ classdef TwoDimDistanceDistribution < Distribution
     
     methods
         function self = TwoDimDistanceDistribution(distribution1d)
+            arguments
+                distribution1d (1,1) Distribution
+            end
             self.distribution1d = distribution1d;
             
             [r_, pdf_, cdf_] = TwoDimDistanceDistribution.TwoDimDistributionFromOneDimDistribution(distribution1d);
@@ -23,6 +26,9 @@ classdef TwoDimDistanceDistribution < Distribution
     
     methods (Static)
         function [r, pdf, cdf] = TwoDimDistributionFromOneDimDistribution(distribution1d)
+            arguments
+                distribution1d (1,1) Distribution
+            end
             % returns the pdf and cdf of the two-dimensional t-distribution
             % as a function of distance, r.
             
@@ -86,6 +92,11 @@ classdef TwoDimDistanceDistribution < Distribution
         end
        
         function y = vecIntegral(f,alim,blim)
+            arguments
+                f (1,1) function_handle
+                alim (1,1) {mustBeNumeric,mustBeReal}
+                blim {mustBeNumeric,mustBeReal}
+            end
            y = zeros(size(blim));
            for i=1:length(y)
               y(i) = integral(f,alim,blim(i)); 
@@ -93,6 +104,13 @@ classdef TwoDimDistanceDistribution < Distribution
         end
         
         function y = fInverseBisection(f, x, yMin,yMax, tol)
+            arguments
+                f (1,1) function_handle
+                x {mustBeNumeric,mustBeReal}
+                yMin (1,1) {mustBeNumeric,mustBeReal}
+                yMax (1,1) {mustBeNumeric,mustBeReal}
+                tol (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+            end
             %FINVERSEBISECTION(F, X)   Compute F^{-1}(X) using Bisection.
             % Taken from cumsum as part of chebfun.
             % chebfun/inv.m
@@ -121,4 +139,3 @@ classdef TwoDimDistanceDistribution < Distribution
         
     end
 end
-

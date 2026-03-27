@@ -40,17 +40,30 @@ classdef (Abstract) Distribution
     
     methods
         function z = locationOfCDFPercentile(self, alpha)
-            assert( alpha > 0 & alpha < 1,'alpha must be between 0 and 1');       
+            arguments
+                self (1,1) Distribution
+                alpha (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBeGreaterThan(alpha,0),mustBeLessThan(alpha,1)}
+            end
             z = fminsearch(@(z) abs(self.cdf(z)-alpha),0);
         end
         
         function var = varianceInRange(self,zmin,zmax)
+            arguments
+                self (1,1) Distribution
+                zmin (1,1) {mustBeNumeric,mustBeReal}
+                zmax (1,1) {mustBeNumeric,mustBeReal}
+            end
             zmin = Distribution.truncate(zmin,self.zrange);
             zmax = Distribution.truncate(zmax,self.zrange);
             var = integral( @(z) z.*z.*self.pdf(z),zmin,zmax);
         end
         
         function var = varianceInPercentileRange(self,pctmin,pctmax)
+            arguments
+                self (1,1) Distribution
+                pctmin (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBeGreaterThan(pctmin,0),mustBeLessThan(pctmin,1)}
+                pctmax (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBeGreaterThan(pctmax,0),mustBeLessThan(pctmax,1)}
+            end
             zmin = self.locationOfCDFPercentile(pctmin);
             zmax = self.locationOfCDFPercentile(pctmax);
             var = self.varianceInRange(zmin,zmax);
@@ -63,6 +76,10 @@ classdef (Abstract) Distribution
         end
         
         function totalError = andersonDarlingError(self,epsilon)
+            arguments
+                self (1,1) Distribution
+                epsilon {mustBeNumeric,mustBeReal}
+            end
             Y = sort(epsilon);
             n = length(Y);
             
@@ -72,6 +89,10 @@ classdef (Abstract) Distribution
         end
         
         function totalError = andersonDarlingInterquartileError(self,epsilon)
+            arguments
+                self (1,1) Distribution
+                epsilon {mustBeNumeric,mustBeReal}
+            end
             if issorted(epsilon)
                 Y = epsilon;
             else
@@ -86,6 +107,13 @@ classdef (Abstract) Distribution
         end
         
         function totalError = kolmogorovSmirnovError(self,epsilon,zmin,zmax)
+            arguments
+                self (1,1) Distribution
+                epsilon {mustBeNumeric,mustBeReal}
+                zmin {mustBeNumeric,mustBeReal,mustBeScalarOrEmpty} = []
+                zmax {mustBeNumeric,mustBeReal,mustBeScalarOrEmpty} = []
+            end
+
             if nargin == 4
                 x = sort(epsilon( epsilon > zmin & epsilon < zmax ));
                 A = 1/(self.cdf(zmax)-self.cdf(zmin));
@@ -113,6 +141,10 @@ classdef (Abstract) Distribution
         end
         
         function totalError = kolmogorovSmirnovInterquartileError(self,epsilon)
+            arguments
+                self (1,1) Distribution
+                epsilon {mustBeNumeric,mustBeReal}
+            end
             x = sort(epsilon);
             n = length(x);
             y_data = (1:n)'/n;
@@ -126,16 +158,13 @@ classdef (Abstract) Distribution
         end
         
         function y = rand(self,varargin)
-            if nargin == 1
-                error('You must specify the size')
-            elseif nargin == 2
-                sz = varargin{1};
-            else
-                sz = zeros(1,nargin-1);
-                for i=1:(nargin-1)
-                    sz(i)=varargin{i};
-                end
+            arguments
+                self (1,1) Distribution
             end
+            arguments (Repeating)
+                varargin {mustBeNumeric,mustBeReal,mustBeFinite,mustBeInteger,mustBeNonnegative}
+            end
+            sz = Distribution.sizeVectorFromInputs(varargin{:});
             n = prod(sz);
             pct = 1/1e6;
             zmin = self.locationOfCDFPercentile(pct/2);
@@ -151,6 +180,10 @@ classdef (Abstract) Distribution
         end
         
         function y = noise(self,t)
+            arguments
+                self (1,1) Distribution
+                t {mustBeNumeric,mustBeReal}
+            end
             y = self.rand(size(t));
             
             % Some notes:
@@ -174,9 +207,33 @@ classdef (Abstract) Distribution
             end
         end
     end
+
+    methods (Static, Access = protected)
+        function sz = sizeVectorFromInputs(varargin)
+            if isempty(varargin)
+                error('You must specify the size');
+            end
+
+            if numel(varargin) == 1
+                sz = varargin{1};
+                mustBeVector(sz);
+                sz = reshape(sz,1,[]);
+            else
+                sz = zeros(1,numel(varargin));
+                for i=1:numel(varargin)
+                    validateattributes(varargin{i}, {'numeric'}, {'scalar'});
+                    sz(i) = varargin{i};
+                end
+            end
+        end
+    end
     
     methods (Static)
         function z = truncate(z,zrange)
+            arguments
+                z (1,1) {mustBeNumeric,mustBeReal}
+                zrange (1,2) {mustBeNumeric,mustBeReal}
+            end
             if z < zrange(1)
                 z=zrange(1);
             end
@@ -186,4 +243,3 @@ classdef (Abstract) Distribution
         end
     end
 end
-

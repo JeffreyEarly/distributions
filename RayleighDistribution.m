@@ -8,6 +8,9 @@ classdef RayleighDistribution < Distribution
     
     methods
         function self = RayleighDistribution(sigma)
+            arguments
+                sigma (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+            end
             self.sigma = sigma;
             self.pdf = @(z) z.*exp(-(z.*z)/(2*sigma*sigma))/(sigma*sigma);
             self.cdf = @(z) 1 - exp(-(z.*z)/(2*sigma*sigma));
@@ -20,4 +23,3 @@ classdef RayleighDistribution < Distribution
         
     end
 end
-

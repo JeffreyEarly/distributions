@@ -23,6 +23,14 @@ classdef AddedDistribution < Distribution
     
     methods
         function self = AddedDistribution(scalings,distribution1,distribution2,varargin)
+            arguments
+                scalings {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector}
+                distribution1 (1,1) Distribution
+                distribution2 (1,1) Distribution
+            end
+            arguments (Repeating)
+                varargin (1,1) Distribution
+            end
             if length(scalings) == 1
                 scalings(2) = 1-scalings;
             end
@@ -58,6 +66,10 @@ classdef AddedDistribution < Distribution
         end
         
         function pdf = SummedPDF(self,z)
+            arguments
+                self (1,1) AddedDistribution
+                z {mustBeNumeric,mustBeReal}
+            end
             pdf = zeros(size(z));
             for i=1:length(self.distributions)
                pdf = pdf + self.scalings(i)*self.distributions{i}.pdf(z); 
@@ -65,6 +77,9 @@ classdef AddedDistribution < Distribution
         end
 
         function pdfNorm = SummedPDFNorm(self)
+            arguments
+                self (1,1) AddedDistribution
+            end
             pdfNorm = 0;
             for i=1:length(self.distributions)
                pdfNorm = pdfNorm + self.scalings(i)*self.distributions{i}.logPDFNorm; 
@@ -72,6 +87,10 @@ classdef AddedDistribution < Distribution
         end
                 
         function cdf = SummedCDF(self,z)
+            arguments
+                self (1,1) AddedDistribution
+                z {mustBeNumeric,mustBeReal}
+            end
             cdf = zeros(size(z));
             for i=1:length(self.distributions)
                 cdf = cdf + self.scalings(i)*self.distributions{i}.cdf(z);
@@ -79,6 +98,10 @@ classdef AddedDistribution < Distribution
         end
         
         function dPDFoverZ = SummeddPDFoverZ(self,z)
+            arguments
+                self (1,1) AddedDistribution
+                z {mustBeNumeric,mustBeReal}
+            end
             dPDFoverZ = zeros(size(z));
             for i=1:length(self.distributions)
                 dPDFoverZ = dPDFoverZ + self.scalings(i)*self.distributions{i}.dPDFoverZ(z);
@@ -86,6 +109,10 @@ classdef AddedDistribution < Distribution
         end
         
         function w = SummedWeight(self,z)
+            arguments
+                self (1,1) AddedDistribution
+                z {mustBeNumeric,mustBeReal}
+            end
             w = -self.pdf(z) ./ self.dPDFoverZ(z);
         end
         
