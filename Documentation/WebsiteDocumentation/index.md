@@ -10,7 +10,7 @@ permalink: /
 
 `Distributions` provides MATLAB classes for modeling probability distributions and stochastic processes.
 
-This website publishes the standard OceanKit package pages together with generated API reference for the core distribution classes.
+These classes are core to the robust fitting techniques in [Spline Core](https://jeffreyearly.github.io/spline-core/).
 
 ## Quick start
 

@@ -81,7 +81,7 @@ classdef (Abstract) Distribution
         % - Topic: Inspect distribution properties
         zrange = [-Inf Inf] % range of support
 
-        % Total variance stored by the subclass.
+        % Total variance.
         %
         % Each concrete distribution sets `variance` according to its
         % mathematical family. For centered distributions this also matches
