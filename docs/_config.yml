@@ -1,5 +1,11 @@
 remote_theme: just-the-docs/just-the-docs
 title: Distributions
 description: Classes for modeling distributions and stochastic processes
+search_enabled: false
+aux_links:
+  "distributions on GitHub":
+    - "https://github.com/JeffreyEarly/distributions"
+aux_links_new_tab: false
+color_scheme: light
 compress_html:
   blanklines: true

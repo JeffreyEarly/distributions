@@ -1,0 +1,35 @@
+// Set our sidebar width.
+$nav-width: 26rem;
+$nav-width-md: 18rem;
+
+:root {
+  --jtd-sidebar-width: clamp(18rem, 24vw, 26rem);
+}
+
+@include mq(md) {
+  .side-bar {
+    width: var(--jtd-sidebar-width);
+    min-width: var(--jtd-sidebar-width);
+    max-width: var(--jtd-sidebar-width);
+    flex: 0 0 var(--jtd-sidebar-width);
+  }
+
+  .side-bar + .main {
+    margin-left: var(--jtd-sidebar-width);
+  }
+
+  .side-bar .site-header,
+  .side-bar .site-nav,
+  .side-bar .site-footer {
+    width: 100%;
+    max-width: none;
+  }
+
+  .side-bar .nav-list .nav-list-link {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: normal;
+    overflow-wrap: normal;
+  }
+}
