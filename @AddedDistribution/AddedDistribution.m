@@ -1,28 +1,66 @@
 classdef AddedDistribution < Distribution
-    %UNTITLED2 Summary of this class goes here
-%     %   Detailed explanation goes here
-
-%     Given a summed distribution,
-% \begin{equation}
-%     p_S(z) = \sum_{i=1}^N \alpha_i p_i(z)
-% \end{equation}
-% where $p_i(z)$ are valid probability distributions and $\sum \alpha_i = 1$, then the summed cdf is given by,
-% \begin{equation}
-%     \textrm{cdf}_S(z) = \sum_{i=1}^N \alpha_i \textrm{cdf}_i(z).
-% \end{equation}
-% The weight function for the summed distribution just follows straight from the definition,
-% \begin{equation}
-%     w(z) = - z\frac{p_S}{\partial_z p_S}
-% \end{equation}
-% and can therefore be computed automatically from the distributions being added.
+    % Model a weighted mixture of component distributions.
+    %
+    % `AddedDistribution` implements a
+    % [mixture distribution](https://en.wikipedia.org/wiki/Mixture_distribution)
+    % by combining component densities $$p_i(z)$$ with nonnegative weights
+    % $$\alpha_i$$ that sum to one. The resulting density and cumulative
+    % distribution are
+    % $$p(z) = \sum_{i=1}^{N} \alpha_i p_i(z),$$
+    % $$F(z) = \sum_{i=1}^{N} \alpha_i F_i(z),$$
+    % and the stored total variance is the weighted sum
+    % $$\mathrm{variance} = \sum_{i=1}^{N} \alpha_i \,
+    % \mathrm{variance}_i.$$ When `scalings` is supplied as a scalar, the
+    % constructor interprets it as the first weight in a two-component
+    % mixture and expands it to $$[\alpha, 1-\alpha].$$
+    %
+    % ```matlab
+    % distribution = AddedDistribution([0.2 0.8], ...
+    %     NormalDistribution(2.0), ...
+    %     StudentTDistribution(nu=4.5, sigma=1.0));
+    % ```
+    %
+    % - Topic: Create distributions
+    % - Topic: Inspect distribution properties
+    % - Topic: Sample from distributions
+    % - Topic: Evaluate distribution fit
+    % - Topic: Model correlated noise
+    % - Topic: Compose distributions
+    % - Declaration: classdef AddedDistribution < Distribution
     
     properties (SetAccess = private)
+        % Mixture weights $$\alpha_i$$ for the component distributions.
+        %
+        % `scalings` stores the weights applied to each component in the
+        % order they are passed to the constructor.
+        %
+        % - Topic: Compose distributions
         scalings
+
+        % Component distributions used in the mixture model.
+        %
+        % `distributions` stores the component distributions whose
+        % densities and CDFs are combined by the mixture weights.
+        %
+        % - Topic: Compose distributions
         distributions
     end
     
     methods
         function self = AddedDistribution(scalings,distribution1,distribution2,varargin)
+            % Create a weighted mixture from two or more distributions.
+            %
+            % Supply either one scalar weight for a two-component mixture
+            % or one weight per component. The remaining positional inputs
+            % are the component distributions in mixture order.
+            %
+            % - Topic: Compose distributions
+            % - Declaration: self = AddedDistribution(scalings,distribution1,distribution2,varargin)
+            % - Parameter scalings: mixture weights that sum to one
+            % - Parameter distribution1: first component distribution
+            % - Parameter distribution2: second component distribution
+            % - Parameter varargin: additional component distributions
+            % - Returns self: AddedDistribution instance
             arguments
                 scalings {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector}
                 distribution1 (1,1) Distribution

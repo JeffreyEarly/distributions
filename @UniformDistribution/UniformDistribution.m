@@ -1,14 +1,57 @@
 classdef UniformDistribution < Distribution
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    % Model a continuous uniform distribution on the interval $$[a,b]$$.
+    %
+    % `UniformDistribution` implements the
+    % [continuous uniform distribution](https://en.wikipedia.org/wiki/Continuous_uniform_distribution)
+    % with density
+    % $$p(z) = \frac{1}{b-a}, \quad a \le z \le b,$$
+    % cumulative distribution
+    % $$F(z) = \frac{z-a}{b-a}, \quad a \le z \le b,$$
+    % together with the usual piecewise extensions to $$0$$ below $$a$$
+    % and $$1$$ above $$b$$. The total variance is
+    % $$\mathrm{variance} = \frac{(b-a)^{2}}{12}.$$
+    %
+    % ```matlab
+    % distribution = UniformDistribution(-0.5,0.5);
+    % samples = distribution.rand([1000 1]);
+    % ```
+    %
+    % - Topic: Create distributions
+    % - Topic: Inspect distribution properties
+    % - Topic: Sample from distributions
+    % - Topic: Evaluate distribution fit
+    % - Topic: Model correlated noise
+    % - Declaration: classdef UniformDistribution < Distribution
     
     properties (SetAccess = private)
+        % Lower endpoint $$a$$ of the support interval.
+        %
+        % `a` stores the inclusive lower bound of the uniform support.
+        %
+        % - Topic: Inspect distribution properties
         a
+
+        % Upper endpoint $$b$$ of the support interval.
+        %
+        % `b` stores the inclusive upper bound of the uniform support.
+        %
+        % - Topic: Inspect distribution properties
         b
     end
     
     methods
         function self = UniformDistribution(a,b)
+            % Create a continuous uniform distribution on $$[a,b]$$.
+            %
+            % When called with no inputs, the constructor uses the default
+            % interval $$[-0.5,0.5].$$ Supplying one endpoint alone is not
+            % supported because the interval must be defined completely.
+            %
+            % - Topic: Create distributions
+            % - Declaration: self = UniformDistribution(a,b)
+            % - Parameter a: lower endpoint of the interval
+            % - Parameter b: upper endpoint of the interval
+            % - Returns self: UniformDistribution instance
             arguments
                 a (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = -0.5
                 b (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = 0.5

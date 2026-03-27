@@ -1,14 +1,62 @@
 classdef StudentTDistribution < Distribution
-    %UNTITLED2 Summary of this class goes here
-    %   Detailed explanation goes here
+    % Model a zero-mean Student's t-distribution with scale $$\sigma$$ and degrees of freedom $$\nu$$.
+    %
+    % `StudentTDistribution` implements the
+    % [Student's t-distribution](https://en.wikipedia.org/wiki/Student%27s_t-distribution)
+    % with density
+    % $$p(z) = \frac{\Gamma\!\left(\frac{\nu+1}{2}\right)}
+    % {\sqrt{\pi \nu}\,\sigma\,\Gamma\!\left(\frac{\nu}{2}\right)}
+    % \left(1 + \frac{z^{2}}{\nu \sigma^{2}}\right)^{-\frac{\nu+1}{2}},$$
+    % cumulative distribution $$F(z)$$ given by the corresponding
+    % Student-t CDF, and variance
+    % $$\mathrm{variance} = \frac{\nu \sigma^{2}}{\nu-2}$$ for
+    % $$\nu > 2.$$ The constructor accepts either the scale parameter
+    % `sigma` or the total variance, but not both.
+    %
+    % ```matlab
+    % distribution = StudentTDistribution(nu=4.5, sigma=8.5);
+    % ```
+    %
+    % - Topic: Create distributions
+    % - Topic: Inspect distribution properties
+    % - Topic: Sample from distributions
+    % - Topic: Evaluate distribution fit
+    % - Topic: Model correlated noise
+    % - Declaration: classdef StudentTDistribution < Distribution
     
     properties (SetAccess = private)
+        % Scale parameter $$\sigma$$.
+        %
+        % `sigma` controls the width of the Student-t density. For
+        % $$\nu > 2,$$ it is related to the total variance through
+        % $$\mathrm{variance} = \frac{\nu \sigma^{2}}{\nu-2}.$$
+        %
+        % - Topic: Inspect distribution properties
         sigma
+
+        % Degrees of freedom $$\nu$$.
+        %
+        % `nu` controls the tail heaviness of the distribution, with
+        % smaller values producing heavier tails.
+        %
+        % - Topic: Inspect distribution properties
         nu
     end
     
     methods
         function self = StudentTDistribution(options)
+            % Create a Student's t-distribution from scale or variance.
+            %
+            % Supply exactly one of `sigma` or `variance` together with the
+            % degrees of freedom `nu`. The `variance` parameterization is
+            % only valid for $$\nu > 2.$$
+            %
+            % - Topic: Create distributions
+            % - Declaration: self = StudentTDistribution(nu=...,sigma=...)
+            % - Parameter options.nu: positive degrees of freedom
+            % - Parameter options.sigma: optional positive scale parameter
+            % - Parameter options.variance: optional positive total variance for `nu > 2`
+            % - Returns self: StudentTDistribution instance
             arguments
                 options.nu (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
                 options.sigma {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive,mustBeScalarOrEmpty} = []
@@ -65,7 +113,7 @@ classdef StudentTDistribution < Distribution
             %    with DF degrees of freedom
             % x,DF must be matrices of same size, or any one can be a scalar.
             %
-            % see also: NORMCDF, NORMPDF, NORMINV
+            % Related functions include NORMCDF, NORMPDF, and NORMINV.
             
             % Reference(s):
             

@@ -1,41 +1,103 @@
 classdef (Abstract) Distribution
-    % an abstract class representing a distribution
-    %   Detailed explanation goes here
+    % Represent a univariate probability distribution and related noise model.
     %
+    % `Distribution` is the abstract base class for a univariate
+    % [probability distribution](https://en.wikipedia.org/wiki/Probability_distribution)
+    % with density $$p(z)$$ and cumulative distribution
+    % $$F(z) = \int_{-\infty}^{z} p(\zeta)\,\mathrm{d}\zeta.$$ Subclasses
+    % provide those distribution functions, and this base class adds
+    % percentile inversion, range-limited second-moment integrals, random
+    % sampling, correlated-noise generation, and goodness-of-fit
+    % diagnostics.
+    %
+    % The method `locationOfCDFPercentile` returns $$z_{\alpha}$$ satisfying
+    % $$F(z_{\alpha}) = \alpha.$$ The method `varianceInRange` evaluates
+    % $$\int_{z_{\min}}^{z_{\max}} z^{2} p(z)\,\mathrm{d}z,$$ which
+    % coincides with the variance contribution on that interval for
+    % centered distributions. The Anderson-Darling and Kolmogorov-Smirnov
+    % methods compare the empirical distribution of a sample against the
+    % theoretical CDF $$F(z)$$ through standard AD and KS statistics.
+    %
+    % - Topic: Inspect distribution properties
+    % - Topic: Sample from distributions
+    % - Topic: Evaluate distribution fit
+    % - Topic: Model correlated noise
     % - Declaration: classdef (Abstract) Distribution
     
     properties
-        rho % autocorrelation function
-        w % 'weight' function
-        logPDF % log of the pdf
+        % Autocorrelation function $$\rho(\tau)$$ used by `noise`.
+        %
+        % When nonempty, `rho` is evaluated on the lag grid passed to
+        % `noise`, and the resulting Toeplitz correlation model is used to
+        % correlate otherwise independent draws.
+        %
+        % - Topic: Model correlated noise
+        rho
+
+        % Weight function $$w(z)$$ for residual-based reweighting.
+        %
+        % Robust-fitting code uses `w` as a residual-dependent variance
+        % proxy. When defined from the density, a common form is
+        % $$w(z) = -\frac{p(z)}{(\partial_z p(z))/z}.$$
+        %
+        % - Topic: Inspect distribution properties
+        w
+
+        % Logarithm of the probability density $$\log p(z)$$.
+        %
+        % `logPDF` can be evaluated directly in the tails without first
+        % forming `pdf(z)`, which is often more stable than computing
+        % `log(pdf(z))`.
+        %
+        % - Topic: Inspect distribution properties
+        logPDF
     end
 
     properties (SetAccess = protected)
-        % probability density function (pdf)
+        % Probability density function $$p(z)$$.
         %
-        % The pdf is specified as a function_handle that takes a single
-        % argument (possible a vector) and turns the pdf evaluated for each
-        % point in the vector.
+        % `pdf` stores a function handle that evaluates the density at one
+        % or more query locations. A valid density integrates to one across
+        % the support of the distribution.
         %
-        % - Topic: Primary attributes
-        % - Returns pdf: a function_handle that takes a single argument
+        % - Topic: Inspect distribution properties
         pdf
 
-        % cumulative distribution function (cdf)
+        % Cumulative distribution function $$F(z)$$.
         %
-        % The cdf is specified as a function_handle that takes a single
-        % argument (possible a vector) and turns the cdf evaluated for each
-        % point in the vector.
+        % `cdf` stores a function handle that evaluates
+        % $$F(z) = \int_{-\infty}^{z} p(\zeta)\,\mathrm{d}\zeta$$ at one or
+        % more query locations.
         %
-        % - Topic: Primary attributes
-        % - Returns pdf: a function_handle that takes a single argument
+        % - Topic: Inspect distribution properties
         cdf
 
+        % Support interval $$[z_{\min}, z_{\max}]$$ for the distribution.
+        %
+        % `zrange` is used to clamp integration bounds for methods such as
+        % `varianceInRange`. The default support is
+        % $$(-\infty,\infty).$$
+        %
+        % - Topic: Inspect distribution properties
         zrange = [-Inf Inf] % range of support
+
+        % Total variance stored by the subclass.
+        %
+        % Each concrete distribution sets `variance` according to its
+        % mathematical family. For centered distributions this also matches
+        % the full-range integral from `varianceInRange`.
+        %
+        % - Topic: Inspect distribution properties
         variance % total variance
     end
 
     properties (Dependent)
+        % Initialization scale $$\sigma_0$$ satisfying $$w(\sigma_0) = \sigma_0^2$$.
+        %
+        % `sigma0` is computed from the current weight function and is used
+        % to seed iterative reweighting methods in downstream packages.
+        %
+        % - Topic: Inspect distribution properties
         sigma0 % initial seed for weight function (set by default to w(sigma0)=sigma0^2)
     end
 
@@ -47,6 +109,16 @@ classdef (Abstract) Distribution
     
     methods
         function z = locationOfCDFPercentile(self, alpha)
+            % Find the location of a CDF percentile.
+            %
+            % This method returns $$z_{\alpha}$$ satisfying
+            % $$F(z_{\alpha}) = \alpha$$ for the current cumulative
+            % distribution $$F$$.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: z = locationOfCDFPercentile(self,alpha)
+            % - Parameter alpha: target percentile strictly between 0 and 1
+            % - Returns z: location where `cdf(z)` equals `alpha`
             arguments
                 self (1,1) Distribution
                 alpha (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBeGreaterThan(alpha,0),mustBeLessThan(alpha,1)}
@@ -55,6 +127,18 @@ classdef (Abstract) Distribution
         end
         
         function var = varianceInRange(self,zmin,zmax)
+            % Compute the range-limited second moment of the distribution.
+            %
+            % This method evaluates
+            % $$\int_{z_{\min}}^{z_{\max}} z^{2} p(z)\,\mathrm{d}z.$$ For
+            % centered distributions, that integral equals the variance
+            % contribution on the interval.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: var = varianceInRange(self,zmin,zmax)
+            % - Parameter zmin: lower integration bound
+            % - Parameter zmax: upper integration bound
+            % - Returns var: range-limited second moment
             arguments
                 self (1,1) Distribution
                 zmin (1,1) {mustBeNumeric,mustBeReal}
@@ -66,6 +150,17 @@ classdef (Abstract) Distribution
         end
         
         function var = varianceInPercentileRange(self,pctmin,pctmax)
+            % Compute the second moment between two CDF percentiles.
+            %
+            % This method first finds $$z_{\alpha_{\min}}$$ and
+            % $$z_{\alpha_{\max}}$$ from the inverse CDF and then evaluates
+            % `varianceInRange` between those locations.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: var = varianceInPercentileRange(self,pctmin,pctmax)
+            % - Parameter pctmin: lower percentile strictly between 0 and 1
+            % - Parameter pctmax: upper percentile strictly between 0 and 1
+            % - Returns var: second moment between the requested percentiles
             arguments
                 self (1,1) Distribution
                 pctmin (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBeGreaterThan(pctmin,0),mustBeLessThan(pctmin,1)}
@@ -83,6 +178,16 @@ classdef (Abstract) Distribution
         end
         
         function totalError = andersonDarlingError(self,epsilon)
+            % Compute the Anderson-Darling fit statistic for a sample.
+            %
+            % Given the sorted sample $$Y_i$$, this method evaluates the
+            % Anderson-Darling statistic formed from the theoretical CDF
+            % $$F$$ and the empirical order statistics.
+            %
+            % - Topic: Evaluate distribution fit
+            % - Declaration: totalError = andersonDarlingError(self,epsilon)
+            % - Parameter epsilon: sample values to compare against the distribution
+            % - Returns totalError: Anderson-Darling discrepancy statistic
             arguments
                 self (1,1) Distribution
                 epsilon {mustBeNumeric,mustBeReal}
@@ -96,6 +201,16 @@ classdef (Abstract) Distribution
         end
         
         function totalError = andersonDarlingInterquartileError(self,epsilon)
+            % Compute an interquartile Anderson-Darling fit statistic.
+            %
+            % This method forms the Anderson-Darling contribution sequence
+            % and retains only the middle half of the ordered sample before
+            % summing the error.
+            %
+            % - Topic: Evaluate distribution fit
+            % - Declaration: totalError = andersonDarlingInterquartileError(self,epsilon)
+            % - Parameter epsilon: sample values to compare against the distribution
+            % - Returns totalError: interquartile Anderson-Darling discrepancy statistic
             arguments
                 self (1,1) Distribution
                 epsilon {mustBeNumeric,mustBeReal}
@@ -114,6 +229,21 @@ classdef (Abstract) Distribution
         end
         
         function totalError = kolmogorovSmirnovError(self,epsilon,zmin,zmax)
+            % Compute the Kolmogorov-Smirnov fit statistic for a sample.
+            %
+            % This method evaluates the scaled KS discrepancy
+            % $$\left(\sqrt{n} + 0.12 + \frac{0.11}{\sqrt{n}}\right) D_n,$$
+            % where $$D_n$$ is the maximum separation between the empirical
+            % CDF and the theoretical CDF. When `zmin` and `zmax` are
+            % supplied, the comparison is restricted to that interval and
+            % the theoretical CDF is renormalized there.
+            %
+            % - Topic: Evaluate distribution fit
+            % - Declaration: totalError = kolmogorovSmirnovError(self,epsilon,zmin,zmax)
+            % - Parameter epsilon: sample values to compare against the distribution
+            % - Parameter zmin: optional lower bound for a truncated comparison interval
+            % - Parameter zmax: optional upper bound for a truncated comparison interval
+            % - Returns totalError: Kolmogorov-Smirnov discrepancy statistic
             arguments
                 self (1,1) Distribution
                 epsilon {mustBeNumeric,mustBeReal}
@@ -148,6 +278,16 @@ classdef (Abstract) Distribution
         end
         
         function totalError = kolmogorovSmirnovInterquartileError(self,epsilon)
+            % Compute an interquartile Kolmogorov-Smirnov fit statistic.
+            %
+            % This method evaluates the empirical-versus-theoretical CDF
+            % mismatch on the middle half of the sorted sample and returns
+            % the scaled interquartile KS discrepancy.
+            %
+            % - Topic: Evaluate distribution fit
+            % - Declaration: totalError = kolmogorovSmirnovInterquartileError(self,epsilon)
+            % - Parameter epsilon: sample values to compare against the distribution
+            % - Returns totalError: interquartile Kolmogorov-Smirnov discrepancy statistic
             arguments
                 self (1,1) Distribution
                 epsilon {mustBeNumeric,mustBeReal}
@@ -165,6 +305,17 @@ classdef (Abstract) Distribution
         end
         
         function y = rand(self,varargin)
+            % Draw random samples from the distribution.
+            %
+            % `rand` draws samples by mapping uniform random numbers
+            % through a discretized approximation to the inverse CDF. Pass
+            % either one size vector or one nonnegative integer per output
+            % dimension.
+            %
+            % - Topic: Sample from distributions
+            % - Declaration: y = rand(self,varargin)
+            % - Parameter varargin: size vector or one nonnegative integer per output dimension
+            % - Returns y: random samples with the requested output shape
             arguments
                 self (1,1) Distribution
             end
@@ -187,6 +338,18 @@ classdef (Abstract) Distribution
         end
         
         function y = noise(self,t)
+            % Draw a correlated noise process on a lag grid.
+            %
+            % When `rho` is empty, `noise` returns independent samples with
+            % the same shape as `t`. When `rho` is defined, it evaluates
+            % $$\rho(t)$$, forms the corresponding Toeplitz correlation
+            % model, and applies its Cholesky factor to the independent
+            % draws.
+            %
+            % - Topic: Model correlated noise
+            % - Declaration: y = noise(self,t)
+            % - Parameter t: lag grid used to evaluate the autocorrelation model
+            % - Returns y: random process samples with the same shape as `t`
             arguments
                 self (1,1) Distribution
                 t {mustBeNumeric,mustBeReal}
