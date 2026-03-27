@@ -4,7 +4,7 @@ classdef TwoDimDistanceDistribution < Distribution
     %   radial distribution of two independent distribution on x-y.
     %   The resulting cdf is far more accurate than the resulting pdf.
     
-    properties
+    properties (SetAccess = private)
         distribution1d
     end
     
@@ -15,7 +15,7 @@ classdef TwoDimDistanceDistribution < Distribution
             end
             self.distribution1d = distribution1d;
             
-            [r_, pdf_, cdf_] = TwoDimDistanceDistribution.TwoDimDistributionFromOneDimDistribution(distribution1d);
+            [r_, pdf_, cdf_] = TwoDimDistanceDistribution.twoDimDistributionFromOneDimDistribution(distribution1d);
             
             self.pdf = @(z) interp1(r_,pdf_,z,'linear',0);
             self.cdf = @(z) interp1(r_,cdf_,z,'linear',0);
@@ -24,8 +24,8 @@ classdef TwoDimDistanceDistribution < Distribution
         end
     end
     
-    methods (Static)
-        function [r, pdf, cdf] = TwoDimDistributionFromOneDimDistribution(distribution1d)
+    methods (Static, Access = private)
+        function [r, pdf, cdf] = twoDimDistributionFromOneDimDistribution(distribution1d)
             arguments
                 distribution1d (1,1) Distribution
             end
@@ -97,7 +97,7 @@ classdef TwoDimDistanceDistribution < Distribution
             cdf(end+1) = 1;
         end
        
-        function y = vecIntegral(f,alim,blim)
+        function y = vectorIntegral(f,alim,blim)
             arguments
                 f (1,1) function_handle
                 alim (1,1) {mustBeNumeric,mustBeReal}
@@ -109,7 +109,7 @@ classdef TwoDimDistanceDistribution < Distribution
            end
         end
         
-        function y = fInverseBisection(f, x, yMin,yMax, tol)
+        function y = inverseBisection(f, x, yMin,yMax, tol)
             arguments
                 f (1,1) function_handle
                 x {mustBeNumeric,mustBeReal}

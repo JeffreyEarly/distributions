@@ -16,7 +16,7 @@ classdef AddedDistribution < Distribution
 % \end{equation}
 % and can therefore be computed automatically from the distributions being added.
     
-    properties
+    properties (SetAccess = private)
         scalings
         distributions
     end
@@ -51,12 +51,12 @@ classdef AddedDistribution < Distribution
                 self.distributions{i+2} = varargin{i};
             end
             
-            self.pdf = @(z) self.SummedPDF(z);
-            self.cdf = @(z) self.SummedCDF(z);
-            self.dPDFoverZ = @(z) self.SummeddPDFoverZ(z);
-            self.w = @(z) self.SummedWeight(z);
+            self.pdf = @(z) self.summedPDF(z);
+            self.cdf = @(z) self.summedCDF(z);
+            self.dPDFOverZ = @(z) self.summedDPDFOverZ(z);
+            self.w = @(z) self.summedWeight(z);
             self.logPDF = @(z) log(self.pdf(z));
-            self.logPDFNorm = self.SummedPDFNorm;
+            self.logPDFNorm = self.summedPDFNorm();
 
             self.variance = 0;
             for i=1:length(self.distributions)
@@ -65,7 +65,10 @@ classdef AddedDistribution < Distribution
             
         end
         
-        function pdf = SummedPDF(self,z)
+    end
+
+    methods (Access = private)
+        function pdf = summedPDF(self,z)
             arguments
                 self (1,1) AddedDistribution
                 z {mustBeNumeric,mustBeReal}
@@ -76,17 +79,17 @@ classdef AddedDistribution < Distribution
             end
         end
 
-        function pdfNorm = SummedPDFNorm(self)
+        function pdfNorm = summedPDFNorm(self)
             arguments
                 self (1,1) AddedDistribution
             end
             pdfNorm = 0;
             for i=1:length(self.distributions)
-               pdfNorm = pdfNorm + self.scalings(i)*self.distributions{i}.logPDFNorm; 
+               pdfNorm = pdfNorm + self.scalings(i)*self.distributions{i}.logPDFNorm;
             end
         end
                 
-        function cdf = SummedCDF(self,z)
+        function cdf = summedCDF(self,z)
             arguments
                 self (1,1) AddedDistribution
                 z {mustBeNumeric,mustBeReal}
@@ -97,24 +100,23 @@ classdef AddedDistribution < Distribution
             end
         end
         
-        function dPDFoverZ = SummeddPDFoverZ(self,z)
+        function dPDFOverZ = summedDPDFOverZ(self,z)
             arguments
                 self (1,1) AddedDistribution
                 z {mustBeNumeric,mustBeReal}
             end
-            dPDFoverZ = zeros(size(z));
+            dPDFOverZ = zeros(size(z));
             for i=1:length(self.distributions)
-                dPDFoverZ = dPDFoverZ + self.scalings(i)*self.distributions{i}.dPDFoverZ(z);
+                dPDFOverZ = dPDFOverZ + self.scalings(i)*self.distributions{i}.dPDFOverZ(z);
             end
         end
         
-        function w = SummedWeight(self,z)
+        function w = summedWeight(self,z)
             arguments
                 self (1,1) AddedDistribution
                 z {mustBeNumeric,mustBeReal}
             end
-            w = -self.pdf(z) ./ self.dPDFoverZ(z);
+            w = -self.pdf(z) ./ self.dPDFOverZ(z);
         end
-        
     end
 end

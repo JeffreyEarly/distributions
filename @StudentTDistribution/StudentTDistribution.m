@@ -2,7 +2,7 @@ classdef StudentTDistribution < Distribution
     %UNTITLED2 Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetAccess = private)
         sigma
         nu
     end
@@ -36,14 +36,14 @@ classdef StudentTDistribution < Distribution
             self.sigma = sigma;
             
             self.pdf = @(z) gamma((nu+1)/2)./(sqrt(pi*nu)*sigma*gamma(nu/2)*(1+(z.*z)/(nu*sigma*sigma)).^((nu+1)/2));
-            self.cdf = @(z) StudentTDistribution.tcdf(z/sigma,nu);
+            self.cdf = @(z) StudentTDistribution.studentTCDF(z/sigma,nu);
             self.w = @(z)((nu/(nu+1))*sigma^2*(1+z.^2/(nu*sigma^2)));
             
             
             a = gamma((nu+1)/2)./(sqrt(pi*nu)*sigma*gamma(nu/2));
             c = nu*sigma*sigma;
             m = (nu+1)/2;
-            self.dPDFoverZ = @(z) -2*(a*m/c)*(1+z.*z/c).^(-m-1);
+            self.dPDFOverZ = @(z) -2*(a*m/c)*(1+z.*z/c).^(-m-1);
             self.logPDF = @(z) -m*log(1+z.*z/c) + log(gamma(m))-log(sqrt(pi*nu)*sigma*gamma(nu/2));
             self.logPDFNorm = log(gamma(m))-log(sqrt(pi*nu)*sigma*gamma(nu/2));
 
@@ -51,8 +51,8 @@ classdef StudentTDistribution < Distribution
         
     end
     
-    methods (Static)
-       function p = tcdf(x,n)
+    methods (Static, Access = private)
+       function p = studentTCDF(x,n)
             arguments
                 x {mustBeNumeric,mustBeReal}
                 n {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}

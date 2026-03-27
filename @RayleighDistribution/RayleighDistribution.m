@@ -2,7 +2,7 @@ classdef RayleighDistribution < Distribution
     %UNTITLED2 Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetAccess = private)
         sigma
     end
     

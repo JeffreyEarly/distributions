@@ -5,6 +5,12 @@ classdef (Abstract) Distribution
     % - Declaration: classdef (Abstract) Distribution
     
     properties
+        rho % autocorrelation function
+        w % 'weight' function
+        logPDF % log of the pdf
+    end
+
+    properties (SetAccess = protected)
         % probability density function (pdf)
         %
         % The pdf is specified as a function_handle that takes a single
@@ -24,16 +30,17 @@ classdef (Abstract) Distribution
         % - Topic: Primary attributes
         % - Returns pdf: a function_handle that takes a single argument
         cdf
-        
-        rho                  % autocorrelation function
-        zrange = [-Inf Inf]  % range of support
-        
-        variance    % total variance
 
-        w           % 'weight' function
-        sigma0      % initial seed for weight function (set by default to w(sigma0)=sigma0^2)
-        dPDFoverZ   % derivative of the pdf wrt z, divided by z
-        logPDF      % log of the pdf
+        zrange = [-Inf Inf] % range of support
+        variance % total variance
+    end
+
+    properties (Dependent)
+        sigma0 % initial seed for weight function (set by default to w(sigma0)=sigma0^2)
+    end
+
+    properties (Access = protected)
+        dPDFOverZ % derivative of the pdf wrt z, divided by z
         logPDFNorm
     end
     
@@ -53,8 +60,8 @@ classdef (Abstract) Distribution
                 zmin (1,1) {mustBeNumeric,mustBeReal}
                 zmax (1,1) {mustBeNumeric,mustBeReal}
             end
-            zmin = Distribution.truncate(zmin,self.zrange);
-            zmax = Distribution.truncate(zmax,self.zrange);
+            zmin = Distribution.truncateToSupport(zmin,self.zrange);
+            zmax = Distribution.truncateToSupport(zmax,self.zrange);
             var = integral( @(z) z.*z.*self.pdf(z),zmin,zmax);
         end
         
@@ -228,8 +235,8 @@ classdef (Abstract) Distribution
         end
     end
     
-    methods (Static)
-        function z = truncate(z,zrange)
+    methods (Static, Access = private)
+        function z = truncateToSupport(z,zrange)
             arguments
                 z (1,1) {mustBeNumeric,mustBeReal}
                 zrange (1,2) {mustBeNumeric,mustBeReal}

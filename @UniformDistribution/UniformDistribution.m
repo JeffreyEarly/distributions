@@ -2,7 +2,7 @@ classdef UniformDistribution < Distribution
     %UNTITLED2 Summary of this class goes here
     %   Detailed explanation goes here
     
-    properties
+    properties (SetAccess = private)
         a
         b
     end
