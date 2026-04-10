@@ -149,6 +149,32 @@ classdef (Abstract) Distribution < handle & matlab.mixin.Heterogeneous & CAAnnot
             end
         end
 
+        function writeToGroup(self,group,propertyAnnotations,attributes)
+            % Write this distribution into an existing NetCDF group.
+            %
+            % Nested persistence paths use `writeToGroup(...)` rather than
+            % `writeToFile(...)`, so this override ensures an optional
+            % nonempty `rho` is preserved there as well.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: writeToGroup(self,group,propertyAnnotations,attributes)
+            % - Parameter group: target NetCDFGroup
+            % - Parameter propertyAnnotations: property annotations selected for persistence
+            % - Parameter attributes: optional group attributes
+            arguments
+                self (1,1) Distribution
+                group (1,1) NetCDFGroup
+                propertyAnnotations CAPropertyAnnotation = CAPropertyAnnotation.empty(0,0)
+                attributes = configureDictionary("string","string")
+            end
+
+            selectedNames = string({propertyAnnotations.name});
+            if ~isempty(self.rho) && ~any(selectedNames == "rho")
+                propertyAnnotations = cat(2, propertyAnnotations, self.propertyAnnotationWithName("rho"));
+            end
+            writeToGroup@CAAnnotatedClass(self, group, propertyAnnotations, attributes);
+        end
+
         function ncfile = writeToFile(self,path,properties,options)
             % Write this distribution to a NetCDF file.
             %
