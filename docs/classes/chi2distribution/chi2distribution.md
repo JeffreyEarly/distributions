@@ -16,10 +16,10 @@ Create a chi-squared distribution from its degrees of freedom.
 
 ## Declaration
 ```matlab
- self = Chi2Distribution(k)
+ self = Chi2Distribution(k=<value>)
 ```
 ## Parameters
-+ `k`  positive degrees of freedom
++ `options.k`  positive degrees of freedom
 
 ## Returns
 + `self`  Chi2Distribution instance

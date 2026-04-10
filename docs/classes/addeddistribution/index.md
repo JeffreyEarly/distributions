@@ -35,9 +35,7 @@ constructor interprets it as the first weight in a two-component
 mixture and expands it to $$[\alpha, 1-\alpha].$$
 
 ```matlab
-distribution = AddedDistribution([0.2 0.8], ...
-    NormalDistribution(2.0), ...
-    StudentTDistribution(nu=4.5, sigma=1.0));
+distribution = AddedDistribution(scalings=[0.2 0.8], distributions=[NormalDistribution(sigma=2.0); StudentTDistribution(nu=4.5, sigma=1.0)]);
 ```
 
 

@@ -3,7 +3,7 @@ layout: default
 title: w
 parent: Distribution
 grand_parent: Classes
-nav_order: 16
+nav_order: 21
 mathjax: true
 ---
 

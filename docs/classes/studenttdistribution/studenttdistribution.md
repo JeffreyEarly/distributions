@@ -16,7 +16,7 @@ Create a Student's t-distribution from scale or variance.
 
 ## Declaration
 ```matlab
- self = StudentTDistribution(nu=...,sigma=...)
+ self = StudentTDistribution(nu=<value>,sigma=<value>)
 ```
 ## Parameters
 + `options.nu`  positive degrees of freedom

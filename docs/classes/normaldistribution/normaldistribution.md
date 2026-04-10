@@ -16,10 +16,10 @@ Create a normal distribution from its standard deviation.
 
 ## Declaration
 ```matlab
- self = NormalDistribution(sigma)
+ self = NormalDistribution(sigma=<value>)
 ```
 ## Parameters
-+ `sigma`  positive standard deviation
++ `options.sigma`  positive standard deviation, default `1`
 
 ## Returns
 + `self`  NormalDistribution instance
@@ -27,6 +27,7 @@ Create a normal distribution from its standard deviation.
 ## Discussion
 
   Use this constructor for a zero-mean Gaussian model with
-  variance $$\sigma^{2}.$$
+  variance $$\sigma^{2}.$$ When called with no inputs, the
+  constructor uses the default scale $$\sigma = 1.$$
 
 

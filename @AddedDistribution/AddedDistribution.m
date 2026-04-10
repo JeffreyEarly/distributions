@@ -15,9 +15,7 @@ classdef AddedDistribution < Distribution
     % mixture and expands it to $$[\alpha, 1-\alpha].$$
     %
     % ```matlab
-    % distribution = AddedDistribution([0.2 0.8], ...
-    %     NormalDistribution(2.0), ...
-    %     StudentTDistribution(nu=4.5, sigma=1.0));
+    % distribution = AddedDistribution(scalings=[0.2 0.8], distributions=[NormalDistribution(sigma=2.0); StudentTDistribution(nu=4.5, sigma=1.0)]);
     % ```
     %
     % - Topic: Create distributions
@@ -45,49 +43,47 @@ classdef AddedDistribution < Distribution
         % - Topic: Compose distributions
         distributions
     end
+
+    properties (Dependent, Hidden, SetAccess = private)
+        distributionIndex
+    end
     
     methods
-        function self = AddedDistribution(scalings,distribution1,distribution2,varargin)
+        function self = AddedDistribution(options)
             % Create a weighted mixture from two or more distributions.
             %
             % Supply either one scalar weight for a two-component mixture
-            % or one weight per component. The remaining positional inputs
-            % are the component distributions in mixture order.
+            % or one weight per component. The `distributions` input lists
+            % the component distributions in mixture order.
             %
             % - Topic: Compose distributions
-            % - Declaration: self = AddedDistribution(scalings,distribution1,distribution2,varargin)
-            % - Parameter scalings: mixture weights that sum to one
-            % - Parameter distribution1: first component distribution
-            % - Parameter distribution2: second component distribution
-            % - Parameter varargin: additional component distributions
+            % - Declaration: self = AddedDistribution(scalings=<value>,distributions=<value>)
+            % - Parameter options.scalings: mixture weights that sum to one
+            % - Parameter options.distributions: component distributions in mixture order
             % - Returns self: AddedDistribution instance
             arguments
-                scalings {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector}
-                distribution1 (1,1) Distribution
-                distribution2 (1,1) Distribution
+                options.scalings {mustBeNumeric,mustBeReal,mustBeFinite,mustBeVector}
+                options.distributions {mustBeA(options.distributions,"Distribution"),mustBeVector}
             end
-            arguments (Repeating)
-                varargin (1,1) Distribution
+            scalings = reshape(options.scalings, 1, []);
+            distributionArray = reshape(options.distributions, [], 1);
+            if length(distributionArray) < 2
+                error('AddedDistribution:NeedAtLeastTwoComponents', 'You must supply at least two component distributions.');
             end
             if length(scalings) == 1
-                scalings(2) = 1-scalings;
+                if length(distributionArray) ~= 2
+                    error('AddedDistribution:ScalarScalingRequiresTwoComponents', 'A scalar scaling is only valid for a two-component mixture.');
+                end
+                scalings(2) = 1 - scalings;
             end
-            if any(scalings<0) || sum(scalings) ~= 1.0
-                error('The scalings must sum to 1.0, and all values must be between 0 and 1.');
+            if any(scalings < 0) || sum(scalings) ~= 1.0
+                error('AddedDistribution:InvalidScalings', 'The scalings must sum to 1.0, and all values must be between 0 and 1.');
+            end
+            if length(distributionArray) ~= length(scalings)
+                error('AddedDistribution:ComponentCountMismatch', 'There must be a scaling value for all distributions.');
             end
             self.scalings = scalings;
-            
-            nDistributions = 2 + length(varargin);
-            if nDistributions ~= length(scalings)
-                error('There must be a scaling value for all distrubtions.');
-            end
-            
-            self.distributions = cell(nDistributions,1);
-            self.distributions{1} = distribution1;
-            self.distributions{2} = distribution2;
-            for i = 1:length(varargin)
-                self.distributions{i+2} = varargin{i};
-            end
+            self.distributions = distributionArray;
             
             self.pdf = @(z) self.summedPDF(z);
             self.cdf = @(z) self.summedCDF(z);
@@ -97,12 +93,27 @@ classdef AddedDistribution < Distribution
             self.logPDFNorm = self.summedPDFNorm();
 
             self.variance = 0;
-            for i=1:length(self.distributions)
-                self.variance = self.variance + self.scalings(i)*self.distributions{i}.variance;
+            for i = 1:length(self.distributions)
+                self.variance = self.variance + self.scalings(i) * self.distributions(i).variance;
             end
-            
         end
-        
+
+        function distributionIndex = get.distributionIndex(self)
+            distributionIndex = reshape(1:length(self.distributions), [], 1);
+        end
+    end
+
+    methods (Static, Hidden)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = Distribution.classDefinedPropertyAnnotations();
+            propertyAnnotations(end+1) = CADimensionProperty('distributionIndex', '', 'Mixture component index.');
+            propertyAnnotations(end+1) = CANumericProperty('scalings', {'distributionIndex'}, '', 'Mixture weights $$\\alpha_i$$.');
+            propertyAnnotations(end+1) = CAObjectProperty('distributions', 'Array of component Distribution objects.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {'scalings', 'distributions'};
+        end
     end
 
     methods (Access = private)
@@ -112,8 +123,8 @@ classdef AddedDistribution < Distribution
                 z {mustBeNumeric,mustBeReal}
             end
             pdf = zeros(size(z));
-            for i=1:length(self.distributions)
-               pdf = pdf + self.scalings(i)*self.distributions{i}.pdf(z); 
+            for i = 1:length(self.distributions)
+               pdf = pdf + self.scalings(i) * self.distributions(i).pdf(z);
             end
         end
 
@@ -122,8 +133,8 @@ classdef AddedDistribution < Distribution
                 self (1,1) AddedDistribution
             end
             pdfNorm = 0;
-            for i=1:length(self.distributions)
-               pdfNorm = pdfNorm + self.scalings(i)*self.distributions{i}.logPDFNorm;
+            for i = 1:length(self.distributions)
+               pdfNorm = pdfNorm + self.scalings(i) * self.distributions(i).logPDFNorm;
             end
         end
                 
@@ -133,8 +144,8 @@ classdef AddedDistribution < Distribution
                 z {mustBeNumeric,mustBeReal}
             end
             cdf = zeros(size(z));
-            for i=1:length(self.distributions)
-                cdf = cdf + self.scalings(i)*self.distributions{i}.cdf(z);
+            for i = 1:length(self.distributions)
+                cdf = cdf + self.scalings(i) * self.distributions(i).cdf(z);
             end
         end
         
@@ -144,8 +155,8 @@ classdef AddedDistribution < Distribution
                 z {mustBeNumeric,mustBeReal}
             end
             dPDFOverZ = zeros(size(z));
-            for i=1:length(self.distributions)
-                dPDFOverZ = dPDFOverZ + self.scalings(i)*self.distributions{i}.dPDFOverZ(z);
+            for i = 1:length(self.distributions)
+                dPDFOverZ = dPDFOverZ + self.scalings(i) * self.distributions(i).dPDFOverZ(z);
             end
         end
         

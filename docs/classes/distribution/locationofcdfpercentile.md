@@ -3,7 +3,7 @@ layout: default
 title: locationOfCDFPercentile
 parent: Distribution
 grand_parent: Classes
-nav_order: 6
+nav_order: 11
 mathjax: true
 ---
 

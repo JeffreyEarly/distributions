@@ -16,10 +16,10 @@ Create a radial-distance distribution from a 1D input model.
 
 ## Declaration
 ```matlab
- self = TwoDimDistanceDistribution(distribution1d)
+ self = TwoDimDistanceDistribution(distribution1d=<value>)
 ```
 ## Parameters
-+ `distribution1d`  one-dimensional distribution for each coordinate
++ `options.distribution1d`  one-dimensional distribution for each coordinate
 
 ## Returns
 + `self`  TwoDimDistanceDistribution instance

@@ -16,10 +16,10 @@ Create a Rayleigh distribution from its scale parameter.
 
 ## Declaration
 ```matlab
- self = RayleighDistribution(sigma)
+ self = RayleighDistribution(sigma=<value>)
 ```
 ## Parameters
-+ `sigma`  positive scale parameter
++ `options.sigma`  positive scale parameter, default `1`
 
 ## Returns
 + `self`  RayleighDistribution instance
@@ -27,6 +27,7 @@ Create a Rayleigh distribution from its scale parameter.
 ## Discussion
 
   Use this constructor for nonnegative radial data whose
-  density follows the Rayleigh family.
+  density follows the Rayleigh family. When called with no
+  inputs, the constructor uses the default scale $$\sigma = 1.$$
 
 

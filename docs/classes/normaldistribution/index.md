@@ -31,7 +31,7 @@ $$F(z) = \frac{1}{2}\left(1 + \operatorname{erf}\!\left(\frac{z}{\sigma \sqrt{2}
 and variance $$\sigma^{2}.$$
 
 ```matlab
-distribution = NormalDistribution(0.5);
+distribution = NormalDistribution(sigma=0.5);
 samples = distribution.rand([1000 1]);
 ```
 

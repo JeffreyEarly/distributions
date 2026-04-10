@@ -3,7 +3,7 @@ layout: default
 title: rand
 parent: Distribution
 grand_parent: Classes
-nav_order: 10
+nav_order: 15
 mathjax: true
 ---
 

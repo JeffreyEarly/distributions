@@ -1,4 +1,4 @@
-classdef (Abstract) Distribution
+classdef (Abstract) Distribution < handle & matlab.mixin.Heterogeneous & CAAnnotatedClass
     % Represent a univariate probability distribution and related noise model.
     %
     % `Distribution` is the abstract base class for a univariate
@@ -118,10 +118,87 @@ classdef (Abstract) Distribution
             % - Topic: Inspect distribution properties
             % - Declaration: self = Distribution()
             % - Returns self: Distribution base-class instance
+            self@CAAnnotatedClass();
+        end
+
+        function restoreOptionalPersistedPropertiesFromGroup(self,group)
+            arguments
+                self (1,1) Distribution
+                group (1,1) NetCDFGroup
+            end
+            vars = CAAnnotatedClass.propertyValuesFromGroup(group, {'rho'}, shouldIgnoreMissingProperties=true);
+            if ~isempty(vars) && isfield(vars, 'rho')
+                self.rho = vars.rho;
+            end
         end
     end
 
     methods
+        function tf = isequal(self,other)
+            arguments
+                self (1,1) Distribution
+                other (1,1) Distribution
+            end
+            tf = isequal@CAAnnotatedClass(self, other);
+            if tf
+                if isempty(self.rho) || isempty(other.rho)
+                    tf = isempty(self.rho) && isempty(other.rho);
+                else
+                    tf = isequal(func2str(self.rho), func2str(other.rho));
+                end
+            end
+        end
+
+        function ncfile = writeToFile(self,path,properties,options)
+            % Write this distribution to a NetCDF file.
+            %
+            % `writeToFile` persists the canonical constructor state needed
+            % to reconstruct the concrete distribution subtype. When `rho`
+            % is nonempty, it is also serialized through the annotated
+            % function-handle path.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: ncfile = writeToFile(self,path,properties,options)
+            % - Parameter path: path to the NetCDF file to create
+            % - Parameter properties: optional additional property names to persist
+            % - Parameter options.shouldOverwriteExisting: optional logical scalar that overwrites an existing file when true
+            % - Parameter options.attributes: optional global NetCDF attributes to add to the file
+            % - Returns ncfile: NetCDFFile handle for the written file
+            arguments (Input)
+                self (1,1) Distribution
+                path char {mustBeNonempty}
+            end
+            arguments (Input,Repeating)
+                properties char
+            end
+            arguments (Input)
+                options.shouldOverwriteExisting logical = false
+                options.attributes = configureDictionary("string","string")
+            end
+            arguments (Output)
+                ncfile NetCDFFile
+            end
+
+            propertyNames = union(string(properties), string(self.requiredProperties()));
+            if ~isempty(self.rho)
+                propertyNames = union(propertyNames, "rho");
+            end
+            propertyAnnotations = self.propertyAnnotationWithName(propertyNames);
+            selectedPropertyNames = string({propertyAnnotations.name});
+            dimensionNames = string.empty(0, 1);
+            for iProperty = 1:length(propertyAnnotations)
+                if isa(propertyAnnotations(iProperty), 'CANumericProperty')
+                    dimensionNames = union(dimensionNames, string(propertyAnnotations(iProperty).dimensions));
+                end
+            end
+            dimensionNames = setdiff(dimensionNames, selectedPropertyNames);
+            if ~isempty(dimensionNames)
+                propertyAnnotations = cat(2, self.propertyAnnotationWithName(dimensionNames), propertyAnnotations);
+            end
+            ncfile = CAAnnotatedClass.writeToPath(self, path, shouldOverwriteExisting=options.shouldOverwriteExisting, propertyAnnotations=propertyAnnotations, attributes=options.attributes);
+            ncfile.sync();
+        end
+
         function z = locationOfCDFPercentile(self, alpha)
             % Find the location of a CDF percentile.
             %
@@ -389,6 +466,65 @@ classdef (Abstract) Distribution
                 T = chol(C,'lower');
                 y = T*y;
             end
+        end
+    end
+
+    methods (Static)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = CAPropertyAnnotation.empty(0,0);
+            propertyAnnotations(end+1) = CAFunctionProperty('rho', 'Autocorrelation function $$\\rho(\\tau)$$ used to generate correlated noise.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {};
+        end
+
+        function distribution = distributionFromFile(path)
+            % Initialize a persisted distribution from a NetCDF file.
+            %
+            % Use this abstract-role factory when the concrete distribution
+            % subtype is only known from the persisted `AnnotatedClass`
+            % metadata in the file.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: distribution = distributionFromFile(path)
+            % - Parameter path: path to an existing NetCDF file
+            % - Returns distribution: reconstructed concrete Distribution instance
+            arguments (Input)
+                path char {mustBeNonempty}
+            end
+            arguments (Output)
+                distribution (1,1) Distribution
+            end
+            atc = CAAnnotatedClass.annotatedClassFromFile(path);
+            if ~isa(atc, 'Distribution')
+                error('Distribution:UnexpectedAnnotatedClass', 'The persisted AnnotatedClass %s does not inherit from Distribution.', class(atc));
+            end
+            distribution = atc;
+        end
+
+        function distribution = distributionFromGroup(group)
+            % Initialize a persisted distribution from a NetCDF group.
+            %
+            % `distributionFromGroup` reconstructs the concrete subtype
+            % stored in the group's `AnnotatedClass` metadata through the
+            % shared annotated-class read path.
+            %
+            % - Topic: Inspect distribution properties
+            % - Declaration: distribution = distributionFromGroup(group)
+            % - Parameter group: NetCDF group containing a persisted distribution
+            % - Returns distribution: reconstructed concrete Distribution instance
+            arguments (Input)
+                group (1,1) NetCDFGroup {mustBeNonempty}
+            end
+            arguments (Output)
+                distribution (1,1) Distribution
+            end
+            atc = CAAnnotatedClass.annotatedClassFromGroup(group);
+            if ~isa(atc, 'Distribution')
+                error('Distribution:UnexpectedAnnotatedClass', 'The persisted AnnotatedClass %s does not inherit from Distribution.', class(atc));
+            end
+            distribution = atc;
         end
     end
 

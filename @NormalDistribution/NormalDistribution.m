@@ -11,7 +11,7 @@ classdef NormalDistribution < Distribution
     % and variance $$\sigma^{2}.$$
     %
     % ```matlab
-    % distribution = NormalDistribution(0.5);
+    % distribution = NormalDistribution(sigma=0.5);
     % samples = distribution.rand([1000 1]);
     % ```
     %
@@ -33,19 +33,21 @@ classdef NormalDistribution < Distribution
     end
     
     methods
-        function self = NormalDistribution(sigma)
+        function self = NormalDistribution(options)
             % Create a normal distribution from its standard deviation.
             %
             % Use this constructor for a zero-mean Gaussian model with
-            % variance $$\sigma^{2}.$$
+            % variance $$\sigma^{2}.$$ When called with no inputs, the
+            % constructor uses the default scale $$\sigma = 1.$$
             %
             % - Topic: Create distributions
-            % - Declaration: self = NormalDistribution(sigma)
-            % - Parameter sigma: positive standard deviation
+            % - Declaration: self = NormalDistribution(sigma=<value>)
+            % - Parameter options.sigma: positive standard deviation, default `1`
             % - Returns self: NormalDistribution instance
             arguments
-                sigma (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+                options.sigma (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive} = 1
             end
+            sigma = options.sigma;
             self.sigma = sigma;
             self.pdf = @(z) exp(-(z.*z)/(2*sigma*sigma))/(sigma*sqrt(2*pi));
             self.cdf = @(z) 0.5*(1 + erf(z/(sigma*sqrt(2))));
@@ -76,4 +78,16 @@ classdef NormalDistribution < Distribution
         end
 
     end
+
+    methods (Static, Hidden)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = Distribution.classDefinedPropertyAnnotations();
+            propertyAnnotations(end+1) = CANumericProperty('sigma', {}, '', 'Standard deviation $$\\sigma$$.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {'sigma'};
+        end
+    end
+
 end

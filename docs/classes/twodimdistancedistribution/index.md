@@ -31,7 +31,7 @@ resulting radial law is the
 [Rayleigh distribution](https://en.wikipedia.org/wiki/Rayleigh_distribution).
 
 ```matlab
-distribution = TwoDimDistanceDistribution(NormalDistribution(1.0));
+distribution = TwoDimDistanceDistribution(distribution1d=NormalDistribution(sigma=1.0));
 samples = distribution.rand([1000 1]);
 ```
 

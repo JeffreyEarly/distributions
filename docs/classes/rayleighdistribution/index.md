@@ -34,7 +34,7 @@ the radial-distance law obtained from two independent zero-mean
 Gaussian coordinates with common standard deviation $$\sigma.$$
 
 ```matlab
-distribution = RayleighDistribution(1.0);
+distribution = RayleighDistribution(sigma=1.0);
 samples = distribution.rand([1000 1]);
 ```
 

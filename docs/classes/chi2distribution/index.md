@@ -32,7 +32,7 @@ where $$P$$ is the regularized lower incomplete gamma function, and
 variance $$\mathrm{variance} = 2k.$$
 
 ```matlab
-distribution = Chi2Distribution(4);
+distribution = Chi2Distribution(k=4);
 samples = distribution.rand([1000 1]);
 ```
 

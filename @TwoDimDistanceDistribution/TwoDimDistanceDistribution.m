@@ -11,7 +11,7 @@ classdef TwoDimDistanceDistribution < Distribution
     % [Rayleigh distribution](https://en.wikipedia.org/wiki/Rayleigh_distribution).
     %
     % ```matlab
-    % distribution = TwoDimDistanceDistribution(NormalDistribution(1.0));
+    % distribution = TwoDimDistanceDistribution(distribution1d=NormalDistribution(sigma=1.0));
     % samples = distribution.rand([1000 1]);
     % ```
     %
@@ -34,19 +34,20 @@ classdef TwoDimDistanceDistribution < Distribution
     end
     
     methods
-        function self = TwoDimDistanceDistribution(distribution1d)
+        function self = TwoDimDistanceDistribution(options)
             % Create a radial-distance distribution from a 1D input model.
             %
             % This constructor numerically builds the radial `pdf` and
             % `cdf` implied by two independent draws from `distribution1d`.
             %
             % - Topic: Compose distributions
-            % - Declaration: self = TwoDimDistanceDistribution(distribution1d)
-            % - Parameter distribution1d: one-dimensional distribution for each coordinate
+            % - Declaration: self = TwoDimDistanceDistribution(distribution1d=<value>)
+            % - Parameter options.distribution1d: one-dimensional distribution for each coordinate
             % - Returns self: TwoDimDistanceDistribution instance
             arguments
-                distribution1d (1,1) Distribution
+                options.distribution1d (1,1) Distribution
             end
+            distribution1d = options.distribution1d;
             self.distribution1d = distribution1d;
             
             [r_, pdf_, cdf_] = TwoDimDistanceDistribution.twoDimDistributionFromOneDimDistribution(distribution1d);
@@ -57,7 +58,18 @@ classdef TwoDimDistanceDistribution < Distribution
             self.variance = self.varianceInRange(0,Inf);
         end
     end
-    
+
+    methods (Static, Hidden)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = Distribution.classDefinedPropertyAnnotations();
+            propertyAnnotations(end+1) = CAObjectProperty('distribution1d', 'One-dimensional distribution used to build the radial law.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {'distribution1d'};
+        end
+    end
+
     methods (Static, Access = private)
         function [r, pdf, cdf] = twoDimDistributionFromOneDimDistribution(distribution1d)
             arguments
@@ -84,10 +96,10 @@ classdef TwoDimDistanceDistribution < Distribution
             % evaluate the cdf on that axis
             pdf_int = distribution1d.cdf(x);
             
-            % use that to define the pdf...
+            % Use that to define the pdf.
             dx = diff(x);
             pdf = diff(pdf_int)./dx;
-            %...so that sum(pdf.*dx)=1.00000
+            % This normalization keeps sum(pdf.*dx)=1.00000.
             
             % now create a 2d version
             pdf2d_norm = (pdf .* reshape(pdf,1,[])) .* (dx .* reshape(dx,1,[]));

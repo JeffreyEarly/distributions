@@ -3,7 +3,7 @@ layout: default
 title: noise
 parent: Distribution
 grand_parent: Classes
-nav_order: 8
+nav_order: 13
 mathjax: true
 ---
 

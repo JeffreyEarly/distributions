@@ -52,7 +52,7 @@ classdef StudentTDistribution < Distribution
             % only valid for $$\nu > 2.$$
             %
             % - Topic: Create distributions
-            % - Declaration: self = StudentTDistribution(nu=...,sigma=...)
+            % - Declaration: self = StudentTDistribution(nu=<value>,sigma=<value>)
             % - Parameter options.nu: positive degrees of freedom
             % - Parameter options.sigma: optional positive scale parameter
             % - Parameter options.variance: optional positive total variance for `nu > 2`
@@ -69,9 +69,9 @@ classdef StudentTDistribution < Distribution
             hasVariance = ~isempty(options.variance);
 
             if hasSigma && hasVariance
-                error('You can set either sigma or variance, not both.');
+                error('StudentTDistribution:AmbiguousScale', 'You can set either sigma or variance, not both.');
             elseif hasVariance && nu <= 2
-                error('You cannot set the variance for nu <=2. You can only set sigma.');
+                error('StudentTDistribution:VarianceUndefined', 'You cannot set the variance for nu <= 2. You can only set sigma.');
             elseif hasVariance
                 self.variance = options.variance;
                 sigma = sqrt(((nu-2)/nu)*self.variance);
@@ -79,7 +79,7 @@ classdef StudentTDistribution < Distribution
                 sigma = options.sigma;
                 self.variance = sigma*sigma*nu/(nu-2);
             else
-                error('You must set either sigma or variance.');
+                error('StudentTDistribution:MissingScale', 'You must set either sigma or variance.');
             end
             self.sigma = sigma;
             
@@ -157,4 +157,17 @@ classdef StudentTDistribution < Distribution
             p = reshape(p,size(z));
         end 
     end
+
+    methods (Static, Hidden)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = Distribution.classDefinedPropertyAnnotations();
+            propertyAnnotations(end+1) = CANumericProperty('nu', {}, '', 'Degrees of freedom $$\\nu$$.');
+            propertyAnnotations(end+1) = CANumericProperty('sigma', {}, '', 'Scale parameter $$\\sigma$$.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {'nu', 'sigma'};
+        end
+    end
+
 end

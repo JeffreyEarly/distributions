@@ -18,8 +18,7 @@ Quick start
 
 The `Distribution` class is an abstract class, so in practice one only uses its subclasses such as `NormalDistribution` directly. For example, to create a Gaussian distribution,
 ```matlab
-sigma = 1;
-distribution = NormalDistribution(sigma);
+distribution = NormalDistribution();
 ```
 and now you can create some random values,
 ```matlab
@@ -41,6 +40,8 @@ plot(zdist,distribution.pdf(zdist))
 
 All distribution subclasses include the `cdf` as a function, as well as the total variance of the process.
 
+`NormalDistribution()` and `RayleighDistribution()` both default to `sigma = 1`, and `UniformDistribution()` defaults to the interval `[-0.5, 0.5]`.
+
 ### Correlated values
 
 It is also sometimes useful to correlate the random values in order to create a stochastic process. Let's define an autocorrelation sequence,
@@ -56,6 +57,19 @@ z = distribution.noise(t);
 <p align="center"><img src="figures/correlatednoise.png" width="400" /></p>
 
 The signal now looks smooth on time scales less than O(tau).
+
+### NetCDF persistence
+
+Distributions can also be written to and reconstructed from NetCDF files using the annotated persistence path. For example,
+```matlab
+distribution = StudentTDistribution(nu=4.5, sigma=1.0);
+distribution.rho = @(t) exp(-(t/3).^2);
+distribution.writeToFile('student-t.nc', shouldOverwriteExisting=true);
+
+distributionBack = Distribution.distributionFromFile('student-t.nc');
+```
+
+When the concrete type is already known, you can also use the inherited annotated reader such as `StudentTDistribution.annotatedClassFromFile('student-t.nc')`.
 
 
 Overview
@@ -113,7 +127,7 @@ Added distribution
 
 The `AddedDistribution` is a univariate [mixture distribution](https://en.wikipedia.org/wiki/Mixture_distribution), essentially the sum of two (or more) distributions.
 
-The class is initialized with `AddedDistribution(scalings,distribution1,distribution2,varargin)` where scalings is a vector that must sum to 1, followed by two (or more) distributions
+The class is initialized with `AddedDistribution(scalings=<weights>, distributions=<Distribution array>)` where `scalings` is a vector that must sum to 1 and `distributions` contains two (or more) component distributions in mixture order.
 
 Two dimensional distance distribution
 ------------

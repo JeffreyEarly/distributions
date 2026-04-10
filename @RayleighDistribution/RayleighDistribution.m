@@ -14,7 +14,7 @@ classdef RayleighDistribution < Distribution
     % Gaussian coordinates with common standard deviation $$\sigma.$$
     %
     % ```matlab
-    % distribution = RayleighDistribution(1.0);
+    % distribution = RayleighDistribution(sigma=1.0);
     % samples = distribution.rand([1000 1]);
     % ```
     %
@@ -36,19 +36,21 @@ classdef RayleighDistribution < Distribution
     end
     
     methods
-        function self = RayleighDistribution(sigma)
+        function self = RayleighDistribution(options)
             % Create a Rayleigh distribution from its scale parameter.
             %
             % Use this constructor for nonnegative radial data whose
-            % density follows the Rayleigh family.
+            % density follows the Rayleigh family. When called with no
+            % inputs, the constructor uses the default scale $$\sigma = 1.$$
             %
             % - Topic: Create distributions
-            % - Declaration: self = RayleighDistribution(sigma)
-            % - Parameter sigma: positive scale parameter
+            % - Declaration: self = RayleighDistribution(sigma=<value>)
+            % - Parameter options.sigma: positive scale parameter, default `1`
             % - Returns self: RayleighDistribution instance
             arguments
-                sigma (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+                options.sigma (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive} = 1
             end
+            sigma = options.sigma;
             self.sigma = sigma;
             self.pdf = @(z) z.*exp(-(z.*z)/(2*sigma*sigma))/(sigma*sigma);
             self.cdf = @(z) 1 - exp(-(z.*z)/(2*sigma*sigma));
@@ -60,4 +62,16 @@ classdef RayleighDistribution < Distribution
         end
         
     end
+
+    methods (Static, Hidden)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = Distribution.classDefinedPropertyAnnotations();
+            propertyAnnotations(end+1) = CANumericProperty('sigma', {}, '', 'Scale parameter $$\\sigma$$.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {'sigma'};
+        end
+    end
+
 end

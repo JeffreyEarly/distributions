@@ -32,7 +32,7 @@ and $$1$$ above $$b$$. The total variance is
 $$\mathrm{variance} = \frac{(b-a)^{2}}{12}.$$
 
 ```matlab
-distribution = UniformDistribution(-0.5,0.5);
+distribution = UniformDistribution(a=-0.5, b=0.5);
 samples = distribution.rand([1000 1]);
 ```
 

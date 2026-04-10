@@ -12,7 +12,7 @@ classdef Chi2Distribution < Distribution
     % variance $$\mathrm{variance} = 2k.$$
     %
     % ```matlab
-    % distribution = Chi2Distribution(4);
+    % distribution = Chi2Distribution(k=4);
     % samples = distribution.rand([1000 1]);
     % ```
     %
@@ -34,19 +34,20 @@ classdef Chi2Distribution < Distribution
     end
     
     methods
-        function self = Chi2Distribution(k)
+        function self = Chi2Distribution(options)
             % Create a chi-squared distribution from its degrees of freedom.
             %
             % Use this constructor for nonnegative data modeled by a
             % chi-squared law with `k` degrees of freedom.
             %
             % - Topic: Create distributions
-            % - Declaration: self = Chi2Distribution(k)
-            % - Parameter k: positive degrees of freedom
+            % - Declaration: self = Chi2Distribution(k=<value>)
+            % - Parameter options.k: positive degrees of freedom
             % - Returns self: Chi2Distribution instance
             arguments
-                k (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
+                options.k (1,1) {mustBeNumeric,mustBeReal,mustBeFinite,mustBePositive}
             end
+            k = options.k;
             self.k = k;
             self.pdf = @(z) (z.^(k/2-1)).*exp(-z/2)/( (2^(k/2))*gamma(k/2) );
             self.cdf = @(z) gammainc(z/2,k/2);
@@ -64,4 +65,16 @@ classdef Chi2Distribution < Distribution
         % end
 
     end
+
+    methods (Static, Hidden)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = Distribution.classDefinedPropertyAnnotations();
+            propertyAnnotations(end+1) = CANumericProperty('k', {}, '', 'Degrees of freedom $$k$$.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {'k'};
+        end
+    end
+
 end

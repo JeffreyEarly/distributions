@@ -12,7 +12,7 @@ classdef UniformDistribution < Distribution
     % $$\mathrm{variance} = \frac{(b-a)^{2}}{12}.$$
     %
     % ```matlab
-    % distribution = UniformDistribution(-0.5,0.5);
+    % distribution = UniformDistribution(a=-0.5, b=0.5);
     % samples = distribution.rand([1000 1]);
     % ```
     %
@@ -40,25 +40,24 @@ classdef UniformDistribution < Distribution
     end
     
     methods
-        function self = UniformDistribution(a,b)
+        function self = UniformDistribution(options)
             % Create a continuous uniform distribution on $$[a,b]$$.
             %
             % When called with no inputs, the constructor uses the default
-            % interval $$[-0.5,0.5].$$ Supplying one endpoint alone is not
-            % supported because the interval must be defined completely.
+            % interval $$[-0.5,0.5].$$ If either endpoint is omitted, the
+            % remaining endpoint uses its default value.
             %
             % - Topic: Create distributions
-            % - Declaration: self = UniformDistribution(a,b)
-            % - Parameter a: lower endpoint of the interval
-            % - Parameter b: upper endpoint of the interval
+            % - Declaration: self = UniformDistribution(a=<value>,b=<value>)
+            % - Parameter options.a: lower endpoint of the interval, default `-0.5`
+            % - Parameter options.b: upper endpoint of the interval, default `0.5`
             % - Returns self: UniformDistribution instance
             arguments
-                a (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = -0.5
-                b (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = 0.5
+                options.a (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = -0.5
+                options.b (1,1) {mustBeNumeric,mustBeReal,mustBeFinite} = 0.5
             end
-            if nargin == 1
-                error('You must specify both interval endpoints.');
-            end
+            a = options.a;
+            b = options.b;
             self.a = a;
             self.b = b;
             self.pdf = @(z) (z < self.a | z > self.b)*0 + (z >= self.a & z <= self.b)*(1/(self.b-self.a)) ;
@@ -71,5 +70,17 @@ classdef UniformDistribution < Distribution
         end
         
     end
-    
+
+    methods (Static, Hidden)
+        function propertyAnnotations = classDefinedPropertyAnnotations()
+            propertyAnnotations = Distribution.classDefinedPropertyAnnotations();
+            propertyAnnotations(end+1) = CANumericProperty('a', {}, '', 'Lower endpoint $$a$$ of the support interval.');
+            propertyAnnotations(end+1) = CANumericProperty('b', {}, '', 'Upper endpoint $$b$$ of the support interval.');
+        end
+
+        function names = classRequiredPropertyNames()
+            names = {'a', 'b'};
+        end
+    end
+
 end

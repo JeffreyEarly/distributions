@@ -16,11 +16,11 @@ Create a continuous uniform distribution on $$[a,b]$$.
 
 ## Declaration
 ```matlab
- self = UniformDistribution(a,b)
+ self = UniformDistribution(a=<value>,b=<value>)
 ```
 ## Parameters
-+ `a`  lower endpoint of the interval
-+ `b`  upper endpoint of the interval
++ `options.a`  lower endpoint of the interval, default `-0.5`
++ `options.b`  upper endpoint of the interval, default `0.5`
 
 ## Returns
 + `self`  UniformDistribution instance
@@ -28,7 +28,7 @@ Create a continuous uniform distribution on $$[a,b]$$.
 ## Discussion
 
   When called with no inputs, the constructor uses the default
-  interval $$[-0.5,0.5].$$ Supplying one endpoint alone is not
-  supported because the interval must be defined completely.
+  interval $$[-0.5,0.5].$$ If either endpoint is omitted, the
+  remaining endpoint uses its default value.
 
 

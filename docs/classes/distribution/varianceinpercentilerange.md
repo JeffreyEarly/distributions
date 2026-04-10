@@ -3,7 +3,7 @@ layout: default
 title: varianceInPercentileRange
 parent: Distribution
 grand_parent: Classes
-nav_order: 14
+nav_order: 19
 mathjax: true
 ---
 

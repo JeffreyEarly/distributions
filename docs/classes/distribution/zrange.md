@@ -3,7 +3,7 @@ layout: default
 title: zrange
 parent: Distribution
 grand_parent: Classes
-nav_order: 17
+nav_order: 23
 mathjax: true
 ---
 

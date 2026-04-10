@@ -3,7 +3,7 @@ layout: default
 title: variance
 parent: Distribution
 grand_parent: Classes
-nav_order: 13
+nav_order: 18
 mathjax: true
 ---
 

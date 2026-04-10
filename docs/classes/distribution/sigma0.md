@@ -3,7 +3,7 @@ layout: default
 title: sigma0
 parent: Distribution
 grand_parent: Classes
-nav_order: 12
+nav_order: 17
 mathjax: true
 ---
 

@@ -16,13 +16,11 @@ Create a weighted mixture from two or more distributions.
 
 ## Declaration
 ```matlab
- self = AddedDistribution(scalings,distribution1,distribution2,varargin)
+ self = AddedDistribution(scalings=<value>,distributions=<value>)
 ```
 ## Parameters
-+ `scalings`  mixture weights that sum to one
-+ `distribution1`  first component distribution
-+ `distribution2`  second component distribution
-+ `varargin`  additional component distributions
++ `options.scalings`  mixture weights that sum to one
++ `options.distributions`  component distributions in mixture order
 
 ## Returns
 + `self`  AddedDistribution instance
@@ -30,7 +28,7 @@ Create a weighted mixture from two or more distributions.
 ## Discussion
 
   Supply either one scalar weight for a two-component mixture
-  or one weight per component. The remaining positional inputs
-  are the component distributions in mixture order.
+  or one weight per component. The `distributions` input lists
+  the component distributions in mixture order.
 
 
