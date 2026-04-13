@@ -4,6 +4,7 @@
 - standardized the distribution constructors around required-property name-value arguments, including `AddedDistribution(scalings=..., distributions=...)`
 - switched known-type NetCDF reconstruction to the inherited `annotatedClassFromFile(...)` and `annotatedClassFromGroup(...)` path
 - kept `Distribution.distributionFromFile(...)` as the polymorphic read entry point while moving optional `rho` restoration onto the shared annotated post-load hook
+- preserved optional nonempty `rho` when writing distributions into existing NetCDF groups through `writeToGroup(...)`
 - restored the documented no-input defaults for `NormalDistribution()`, `RayleighDistribution()`, and `UniformDistribution()`
 - split smoke scripts out of `UnitTests` into a shipped `Examples` folder and replaced the script-based checks with `UnitTests/DistributionsUnitTests.m`
 - updated README and website usage examples to the new constructor and persistence APIs
